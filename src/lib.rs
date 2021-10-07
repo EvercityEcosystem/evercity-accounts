@@ -113,12 +113,12 @@ impl<T: Config> Module<T> {
     }
 
      /// <pre>
-    /// Method: account_is_project_owner(acc: &T::AccountId) -> bool
+    /// Method: account_is_cc_project_owner(acc: &T::AccountId) -> bool
     /// Arguments: acc: AccountId - checked account id
     ///
     /// Checks if the acc has carbon credits project owner role
     /// </pre>
-    pub fn account_is_project_owner(acc: &T::AccountId) -> bool {
+    pub fn account_is_cc_project_owner(acc: &T::AccountId) -> bool {
         AccountRegistry::<T>::get(acc).roles & CC_PROJECT_OWNER_ROLE_MASK != 0
     }
 
@@ -153,12 +153,12 @@ impl<T: Config> Module<T> {
     }
 
     /// <pre>
-    /// Method: account_is_registry(acc: &T::AccountId) -> bool
+    /// Method: account_is_cc_registry(acc: &T::AccountId) -> bool
     /// Arguments: acc: AccountId - checked account id
     ///
     /// Checks if the acc has carbon credits registry role
     /// </pre>
-    pub fn account_is_registry(acc: &T::AccountId) -> bool {
+    pub fn account_is_cc_registry(acc: &T::AccountId) -> bool {
         AccountRegistry::<T>::get(acc).roles & CC_REGISTRY_ROLE_MASK != 0
     }
 }
