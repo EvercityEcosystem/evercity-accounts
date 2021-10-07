@@ -112,23 +112,53 @@ impl<T: Config> Module<T> {
         AccountRegistry::<T>::get(acc).roles & MASTER_ROLE_MASK != 0
     }
 
+     /// <pre>
+    /// Method: account_is_project_owner(acc: &T::AccountId) -> bool
+    /// Arguments: acc: AccountId - checked account id
+    ///
+    /// Checks if the acc has carbon credits project owner role
+    /// </pre>
     pub fn account_is_project_owner(acc: &T::AccountId) -> bool {
-        AccountRegistry::<T>::get(acc).roles & PROJECT_OWNER_ROLE_MASK != 0
+        AccountRegistry::<T>::get(acc).roles & CC_PROJECT_OWNER_ROLE_MASK != 0
     }
 
-    pub fn account_is_auditor(acc: &T::AccountId) -> bool {
-        AccountRegistry::<T>::get(acc).roles & AUDITOR_ROLE_MASK != 0
+    /// <pre>
+    /// Method: account_is_cc_auditor(acc: &T::AccountId) -> bool
+    /// Arguments: acc: AccountId - checked account id
+    ///
+    /// Checks if the acc hasc carbon credits auditor role
+    /// </pre>
+    pub fn account_is_cc_auditor(acc: &T::AccountId) -> bool {
+        AccountRegistry::<T>::get(acc).roles & CC_AUDITOR_ROLE_MASK != 0
     }
 
-    pub fn account_is_standard(acc: &T::AccountId) -> bool {
-        AccountRegistry::<T>::get(acc).roles & STANDARD_ROLE_MASK != 0
+    /// <pre>
+    /// Method: account_is_cc_standard(acc: &T::AccountId) -> bool
+    /// Arguments: acc: AccountId - checked account id
+    ///
+    /// Checks if the acc has carbon credits standard role
+    /// </pre>
+    pub fn account_is_cc_standard(acc: &T::AccountId) -> bool {
+        AccountRegistry::<T>::get(acc).roles & CC_STANDARD_ROLE_MASK != 0
     }
 
-    pub fn account_is_investor(acc: &T::AccountId) -> bool {
-        AccountRegistry::<T>::get(acc).roles & INVESTOR_ROLE_MASK != 0
+    /// <pre>
+    /// Method: account_is_cc_investor(acc: &T::AccountId) -> bool
+    /// Arguments: acc: AccountId - checked account id
+    ///
+    /// Checks if the acc has carbon credits investor role
+    /// </pre>
+    pub fn account_is_cc_investor(acc: &T::AccountId) -> bool {
+        AccountRegistry::<T>::get(acc).roles & CC_INVESTOR_ROLE_MASK != 0
     }
 
+    /// <pre>
+    /// Method: account_is_registry(acc: &T::AccountId) -> bool
+    /// Arguments: acc: AccountId - checked account id
+    ///
+    /// Checks if the acc has carbon credits registry role
+    /// </pre>
     pub fn account_is_registry(acc: &T::AccountId) -> bool {
-        AccountRegistry::<T>::get(acc).roles & REGISTRY_ROLE_MASK != 0
+        AccountRegistry::<T>::get(acc).roles & CC_REGISTRY_ROLE_MASK != 0
     }
 }

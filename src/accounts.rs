@@ -3,23 +3,23 @@ use frame_support::{
     sp_runtime::RuntimeDebug,
 };
 
+pub type RoleMask = u32;
 
-pub type RoleMask = u64;
-
+// CC_ prefix Means - Carbon Credits
 pub const MASTER_ROLE_MASK: RoleMask = 1;
-pub const PROJECT_OWNER_ROLE_MASK: RoleMask = 2;
-pub const AUDITOR_ROLE_MASK: RoleMask = 4;
-pub const STANDARD_ROLE_MASK: RoleMask = 8;
-pub const INVESTOR_ROLE_MASK: RoleMask = 16;
-pub const REGISTRY_ROLE_MASK: RoleMask = 32;
+
+pub const CC_PROJECT_OWNER_ROLE_MASK: RoleMask = 256;
+pub const CC_AUDITOR_ROLE_MASK: RoleMask = 512;
+pub const CC_STANDARD_ROLE_MASK: RoleMask = 1024;
+pub const CC_INVESTOR_ROLE_MASK: RoleMask = 2048;
+pub const CC_REGISTRY_ROLE_MASK: RoleMask = 4096;
 
 pub const ALL_ROLES_MASK: RoleMask = MASTER_ROLE_MASK
-    | PROJECT_OWNER_ROLE_MASK
-    | AUDITOR_ROLE_MASK
-    | STANDARD_ROLE_MASK
-    | AUDITOR_ROLE_MASK
-    | INVESTOR_ROLE_MASK
-    | REGISTRY_ROLE_MASK;
+    | CC_PROJECT_OWNER_ROLE_MASK
+    | CC_AUDITOR_ROLE_MASK
+    | CC_STANDARD_ROLE_MASK
+    | CC_INVESTOR_ROLE_MASK
+    | CC_REGISTRY_ROLE_MASK;
 
 #[inline]
 pub const fn is_roles_correct(roles: RoleMask) -> bool {
