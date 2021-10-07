@@ -23,13 +23,13 @@ use frame_support::sp_std::{
         PartialEq}, 
 };
 
-pub mod roles;
+pub mod accounts;
 #[cfg(test)]
 pub mod mock;
 #[cfg(test)]    
 pub mod tests;
 
-use roles::*;
+use accounts::*;
 
 pub trait Config: frame_system::Config {}
 
@@ -52,7 +52,7 @@ decl_storage! {
 decl_error! {
     pub enum Error for Module<T: Config> {
         // Account errors:
-        AccountNotAuthorized,
+        AccountNotMaster,
         AccountNotAuditor,
         AccountNotOwner,
         AccountNotStandard,
@@ -67,11 +67,10 @@ decl_error! {
 
 decl_module! {
     pub struct Module<T: Config> for enum Call where origin: T::Origin {
-
         #[weight = 10_000]
         fn account_add_with_role_and_data(origin, who: T::AccountId, role: RoleMask) -> DispatchResult {
             let caller = ensure_signed(origin)?;
-            ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotAuthorized);
+            ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
             ensure!(!AccountRegistry::<T>::contains_key(&who), Error::<T>::AccountToAddAlreadyExists);
             ensure!(is_roles_correct(role), Error::<T>::AccountRoleParamIncorrect);
             Self::account_add(&who, CarbonCreditAccountStruct::new(role));
@@ -82,12 +81,10 @@ decl_module! {
         fn account_set_with_role_and_data(origin, who: T::AccountId, role: RoleMask) -> DispatchResult {
             let caller = ensure_signed(origin)?;
             ensure!(caller != who, Error::<T>::InvalidAction);
-            ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotAuthorized);
+            ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
             ensure!(AccountRegistry::<T>::contains_key(&who), Error::<T>::AccountNotExist);
             ensure!(is_roles_correct(role), Error::<T>::AccountRoleParamIncorrect);
-
             Self::account_set(&who, role);
-
             Ok(())
         }
     }

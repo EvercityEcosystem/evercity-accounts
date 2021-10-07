@@ -6,12 +6,12 @@ use frame_support::{
 
 pub type RoleMask = u64;
 
-pub const MASTER_ROLE_MASK: RoleMask = 1u64;
-pub const PROJECT_OWNER_ROLE_MASK: RoleMask = 2u64;
-pub const AUDITOR_ROLE_MASK: RoleMask = 4u64;
-pub const STANDARD_ROLE_MASK: RoleMask = 8u64;
-pub const INVESTOR_ROLE_MASK: RoleMask = 16u64;
-pub const REGISTRY_ROLE_MASK: RoleMask = 32u64;
+pub const MASTER_ROLE_MASK: RoleMask = 1;
+pub const PROJECT_OWNER_ROLE_MASK: RoleMask = 2;
+pub const AUDITOR_ROLE_MASK: RoleMask = 4;
+pub const STANDARD_ROLE_MASK: RoleMask = 8;
+pub const INVESTOR_ROLE_MASK: RoleMask = 16;
+pub const REGISTRY_ROLE_MASK: RoleMask = 32;
 
 pub const ALL_ROLES_MASK: RoleMask = MASTER_ROLE_MASK
     | PROJECT_OWNER_ROLE_MASK
