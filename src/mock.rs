@@ -69,13 +69,20 @@ impl pallet_balances::Config for TestRuntime {
 }
 
 // (AccountId, role)
-pub static ROLES: [(u64, RoleMask); 6] = [
+pub static ROLES: [(u64, RoleMask); 13] = [
     (1_u64, MASTER_ROLE_MASK),
-    (2_u64, CC_PROJECT_OWNER_ROLE_MASK),
-    (3_u64, CC_AUDITOR_ROLE_MASK),
-    (4_u64, CC_STANDARD_ROLE_MASK),
-    (5_u64, CC_INVESTOR_ROLE_MASK),
-    (6_u64, CC_REGISTRY_ROLE_MASK),
+    (2_u64, CUSTODIAN_ROLE_MASK),
+    (3_u64, ISSUER_ROLE_MASK),
+    (4_u64, INVESTOR_ROLE_MASK),
+    (5_u64, AUDITOR_ROLE_MASK),
+    (6_u64, MANAGER_ROLE_MASK),
+    (7_u64, EMISSION_CREATOR_ROLE_MASK),
+    (8_u64, IMPACT_REPORTER_ROLE_MASK),
+    (9_u64, CC_PROJECT_OWNER_ROLE_MASK),
+    (10_u64, CC_AUDITOR_ROLE_MASK),
+    (11_u64, CC_STANDARD_ROLE_MASK),
+    (12_u64, CC_INVESTOR_ROLE_MASK),
+    (13_u64, CC_REGISTRY_ROLE_MASK),
 ];
 
 //Build genesis storage according to the mock runtime.
