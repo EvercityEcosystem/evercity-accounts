@@ -69,7 +69,7 @@ impl pallet_balances::Config for TestRuntime {
 }
 
 // (AccountId, role)
-static ROLES: [(u64, RoleMask); 6] = [
+pub static ROLES: [(u64, RoleMask); 6] = [
     (1_u64, MASTER_ROLE_MASK),
     (2_u64, CC_PROJECT_OWNER_ROLE_MASK),
     (3_u64, CC_AUDITOR_ROLE_MASK),
