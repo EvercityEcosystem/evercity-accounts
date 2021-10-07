@@ -5,6 +5,7 @@ use frame_support::sp_runtime::{
 use sp_core::H256;
 use crate as pallet_evercity_accounts;
 use crate::accounts::*;
+use frame_support::parameter_types;
 
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<TestRuntime>;
@@ -17,8 +18,8 @@ frame_support::construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Module, Call, Config, Storage},
-        //Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
+		System: frame_system::{Module, Call, Config, Storage, Event<T>},
+        Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
 		EvercityAccounts: pallet_evercity_accounts::{Module, Call, Storage},
 	}
 );
@@ -41,15 +42,30 @@ impl frame_system::Config for TestRuntime {
 	type BlockHashCount = ();
 	type Version = ();
 	type PalletInfo = PalletInfo;
-	type AccountData = ();
+	type AccountData = pallet_balances::AccountData<u64>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
+
 }
 
 impl pallet_evercity_accounts::Config for TestRuntime {
+}
 
+parameter_types! {
+    pub const ExistentialDeposit: u64 = 0;
+    pub const MaxLocks: u32 = 50;
+}
+
+impl pallet_balances::Config for TestRuntime {
+    type Balance = u64;
+    type Event = ();
+    type DustRemoval = ();
+    type ExistentialDeposit = ExistentialDeposit;
+    type AccountStore = System;
+    type WeightInfo = ();
+    type MaxLocks = MaxLocks;
 }
 
 // (AccountId, role)
@@ -62,40 +78,34 @@ static ROLES: [(u64, RoleMask); 6] = [
     (6_u64, REGISTRY_ROLE_MASK),
 ];
 
+//Build genesis storage according to the mock runtime.
+pub fn new_test_ext() -> frame_support::sp_io::TestExternalities {
+    let mut t = frame_system::GenesisConfig::default()
+        .build_storage::<TestRuntime>()
+        .unwrap();
+    pallet_balances::GenesisConfig::<TestRuntime> {
+        // Provide some initial balances
+        balances: ROLES.iter().map(|x| (x.0, 100000)).collect(),
+    }
+    .assimilate_storage(&mut t)
+    .unwrap();
 
-// // Build genesis storage according to the mock runtime.
-// pub fn new_test_ext() -> frame_support::sp_io::TestExternalities {
-// 	frame_system::GenesisConfig::default().build_storage::<TestRuntime>().unwrap().into()
-// }
+    super::GenesisConfig::<TestRuntime> {
+        // Accounts for tests
+        genesis_account_registry: ROLES
+            .iter()
+            .map(|(acc, role)| {
+                (
+                    *acc,
+                    CarbonCreditAccountStruct {
+                        roles: *role
+                    },
+                )
+            })
+            .collect(),
+    }
+    .assimilate_storage(&mut t)
+    .unwrap();
 
-// Build genesis storage according to the mock runtime.
-// pub fn new_test_ext() -> frame_support::sp_io::TestExternalities {
-//     let mut t = frame_system::GenesisConfig::default()
-//         .build_storage::<TestRuntime>()
-//         .unwrap();
-//     pallet_balances::GenesisConfig::<TestRuntime> {
-//         // Provide some initial balances
-//         balances: ROLES.iter().map(|x| (x.0, 100000)).collect(),
-//     }
-//     .assimilate_storage(&mut t)
-//     .unwrap();
-
-//     super::GenesisConfig::<TestRuntime> {
-//         // Accounts for tests
-//         genesis_account_registry: ROLES
-//             .iter()
-//             .map(|(acc, role)| {
-//                 (
-//                     *acc,
-//                     CarbonCreditAccountStruct {
-//                         roles: *role
-//                     },
-//                 )
-//             })
-//             .collect(),
-//     }
-//     .assimilate_storage(&mut t)
-//     .unwrap();
-
-//     t.into()
-// }
+    t.into()
+}
