@@ -14,22 +14,18 @@ use frame_support::{
 use frame_system::{
     ensure_signed,
 };
-
-// use frame_support::traits::IntegrityTest;
-
 use frame_support::sp_std::{
     cmp::{
         Eq, 
         PartialEq}, 
 };
+use accounts::*;
 
 pub mod accounts;
 #[cfg(test)]
 pub mod mock;
 #[cfg(test)]    
 pub mod tests;
-
-use accounts::*;
 
 pub trait Config: frame_system::Config {}
 
@@ -60,8 +56,9 @@ decl_error! {
         AccountNotInvestor,
         AccountToAddAlreadyExists,
         AccountRoleParamIncorrect,
-        InvalidAction,
         AccountNotExist,
+
+        InvalidAction,
     }
 }
 
