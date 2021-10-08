@@ -90,7 +90,6 @@ decl_module! {
     }
 }
 
-// Atomic operations here
 impl<T: Config> Module<T> {
     fn account_set(who: &T::AccountId, role: RoleMask) {
         AccountRegistry::<T>::mutate(&who,|acc|{
@@ -108,6 +107,7 @@ impl<T: Config> Module<T> {
     ///
     /// Checks if the acc has global Master role
     /// </pre>
+    #[inline]
     pub fn account_is_master(acc: &T::AccountId) -> bool {
         AccountRegistry::<T>::get(acc).roles & MASTER_ROLE_MASK != 0
     }
@@ -118,6 +118,7 @@ impl<T: Config> Module<T> {
     ///
     /// Checks if the acc has carbon credits project owner role
     /// </pre>
+    #[inline]
     pub fn account_is_cc_project_owner(acc: &T::AccountId) -> bool {
         AccountRegistry::<T>::get(acc).roles & CC_PROJECT_OWNER_ROLE_MASK != 0
     }
@@ -128,6 +129,7 @@ impl<T: Config> Module<T> {
     ///
     /// Checks if the acc hasc carbon credits auditor role
     /// </pre>
+    #[inline]
     pub fn account_is_cc_auditor(acc: &T::AccountId) -> bool {
         AccountRegistry::<T>::get(acc).roles & CC_AUDITOR_ROLE_MASK != 0
     }
@@ -138,6 +140,7 @@ impl<T: Config> Module<T> {
     ///
     /// Checks if the acc has carbon credits standard role
     /// </pre>
+    #[inline]
     pub fn account_is_cc_standard(acc: &T::AccountId) -> bool {
         AccountRegistry::<T>::get(acc).roles & CC_STANDARD_ROLE_MASK != 0
     }
@@ -148,6 +151,7 @@ impl<T: Config> Module<T> {
     ///
     /// Checks if the acc has carbon credits investor role
     /// </pre>
+    #[inline]
     pub fn account_is_cc_investor(acc: &T::AccountId) -> bool {
         AccountRegistry::<T>::get(acc).roles & CC_INVESTOR_ROLE_MASK != 0
     }
@@ -158,6 +162,7 @@ impl<T: Config> Module<T> {
     ///
     /// Checks if the acc has carbon credits registry role
     /// </pre>
+    #[inline]
     pub fn account_is_cc_registry(acc: &T::AccountId) -> bool {
         AccountRegistry::<T>::get(acc).roles & CC_REGISTRY_ROLE_MASK != 0
     }
