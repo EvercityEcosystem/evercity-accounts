@@ -6,8 +6,7 @@ use frame_support::{
     decl_module, 
     decl_storage,
     dispatch::{
-        DispatchResult, 
-        DispatchError, 
+        DispatchResult,
         Vec,
     },
 };
@@ -65,7 +64,7 @@ decl_error! {
 decl_module! {
     pub struct Module<T: Config> for enum Call where origin: T::Origin {
         #[weight = 10_000]
-        fn account_add_with_role_and_data(origin, who: T::AccountId, role: RoleMask) -> DispatchResult {
+        pub fn account_add_with_role_and_data(origin, who: T::AccountId, role: RoleMask) -> DispatchResult {
             let caller = ensure_signed(origin)?;
             ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
             ensure!(!AccountRegistry::<T>::contains_key(&who), Error::<T>::AccountToAddAlreadyExists);
@@ -75,7 +74,7 @@ decl_module! {
         }
 
         #[weight = 10_000]
-        fn account_set_with_role_and_data(origin, who: T::AccountId, role: RoleMask) -> DispatchResult {
+        pub fn account_set_with_role_and_data(origin, who: T::AccountId, role: RoleMask) -> DispatchResult {
             let caller = ensure_signed(origin)?;
             ensure!(caller != who, Error::<T>::InvalidAction);
             ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
