@@ -56,6 +56,7 @@ decl_error! {
         AccountToAddAlreadyExists,
         AccountRoleParamIncorrect,
         AccountNotExist,
+        AccountRoleMasterIncluded,
 
         InvalidAction,
     }
@@ -69,6 +70,7 @@ decl_module! {
             ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
             ensure!(!AccountRegistry::<T>::contains_key(&who), Error::<T>::AccountToAddAlreadyExists);
             ensure!(is_roles_correct(role), Error::<T>::AccountRoleParamIncorrect);
+            ensure!(!is_roles_mask_included(role, MASTER_ROLE_MASK), Error::<T>::AccountRoleMasterIncluded);
             Self::account_add(&who, CarbonCreditAccountStruct::new(role));
             Ok(())
         }
@@ -80,7 +82,18 @@ decl_module! {
             ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
             ensure!(AccountRegistry::<T>::contains_key(&who), Error::<T>::AccountNotExist);
             ensure!(is_roles_correct(role), Error::<T>::AccountRoleParamIncorrect);
+            ensure!(!is_roles_mask_included(role, MASTER_ROLE_MASK), Error::<T>::AccountRoleMasterIncluded);
             Self::account_set(&who, role);
+            Ok(())
+        }
+
+        #[weight = 10_000]
+        pub fn set_master(origin, who: T::AccountId) -> DispatchResult {
+            let caller = ensure_signed(origin)?;
+            ensure!(caller != who, Error::<T>::InvalidAction);
+            ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
+            ensure!(!Self::account_is_master(&who), Error::<T>::InvalidAction);
+            Self::account_set(&who, MASTER_ROLE_MASK);
             Ok(())
         }
     }

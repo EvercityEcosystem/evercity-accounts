@@ -44,6 +44,11 @@ pub const fn is_roles_correct(roles: RoleMask) -> bool {
     roles <= ALL_ROLES_MASK && roles > 0
 }
 
+#[inline]
+pub const fn is_roles_mask_included(roles: RoleMask, const_mask: RoleMask) -> bool {
+    roles <= const_mask && roles > 0
+}
+
 #[derive(Encode, Decode, Clone, Default, RuntimeDebug)]
 pub struct CarbonCreditAccountStruct {
     pub roles: RoleMask,
