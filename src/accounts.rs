@@ -53,13 +53,13 @@ pub const fn is_roles_mask_included(roles: RoleMask, const_mask: RoleMask) -> bo
 
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[derive(Encode, Decode, Clone, Default, RuntimeDebug)]
-pub struct CarbonCreditAccountStruct {
+pub struct AccountStruct {
     pub roles: RoleMask,
 }
 
-impl CarbonCreditAccountStruct {
+impl AccountStruct {
     pub fn new(roles: RoleMask) -> Self {
-        CarbonCreditAccountStruct{
+        AccountStruct{
             roles
         }
     }

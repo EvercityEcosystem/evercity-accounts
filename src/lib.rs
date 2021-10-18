@@ -38,7 +38,7 @@ decl_storage! {
         AccountRegistry
             get(fn account_registry)
             config(genesis_account_registry):
-            map hasher(blake2_128_concat) T::AccountId => CarbonCreditAccountStruct;
+            map hasher(blake2_128_concat) T::AccountId => AccountStruct;
 
         LastID: u32;
     }
@@ -71,7 +71,7 @@ decl_module! {
             ensure!(!AccountRegistry::<T>::contains_key(&who), Error::<T>::AccountToAddAlreadyExists);
             ensure!(is_roles_correct(role), Error::<T>::AccountRoleParamIncorrect);
             ensure!(!is_roles_mask_included(role, MASTER_ROLE_MASK), Error::<T>::AccountRoleMasterIncluded);
-            Self::account_add(&who, CarbonCreditAccountStruct::new(role));
+            Self::account_add(&who, AccountStruct::new(role));
             Ok(())
         }
 
@@ -106,7 +106,7 @@ impl<T: Config> Module<T> {
         });
     }
 
-    fn account_add(account: &T::AccountId, data: CarbonCreditAccountStruct) {
+    fn account_add(account: &T::AccountId, data: AccountStruct) {
         AccountRegistry::<T>::insert(account, &data);
     }
 

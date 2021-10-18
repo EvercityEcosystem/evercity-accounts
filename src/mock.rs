@@ -104,7 +104,7 @@ pub fn new_test_ext() -> frame_support::sp_io::TestExternalities {
             .map(|(acc, role)| {
                 (
                     *acc,
-                    CarbonCreditAccountStruct {
+                    AccountStruct {
                         roles: *role
                     },
                 )
