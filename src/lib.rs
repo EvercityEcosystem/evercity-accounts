@@ -64,6 +64,8 @@ decl_error! {
 
 decl_module! {
     pub struct Module<T: Config> for enum Call where origin: T::Origin {
+        type Error = Error<T>;
+        
         #[weight = 10_000]
         pub fn account_add_with_role_and_data(origin, who: T::AccountId, role: RoleMask) -> DispatchResult {
             let caller = ensure_signed(origin)?;
