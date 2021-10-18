@@ -1,0 +1,6 @@
+{
+    "RoleMask": "u32",
+    "AccountStruct": {
+      "roles": "RoleMask"
+    }
+}
