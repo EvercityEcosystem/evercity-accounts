@@ -2,6 +2,8 @@ use frame_support::{
     codec::{Decode, Encode},
     sp_runtime::RuntimeDebug,
 };
+#[cfg(feature = "std")]
+use serde::{Deserialize, Serialize};
 
 pub type RoleMask = u32;
 
@@ -49,6 +51,7 @@ pub const fn is_roles_mask_included(roles: RoleMask, const_mask: RoleMask) -> bo
     roles <= const_mask && roles > 0
 }
 
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[derive(Encode, Decode, Clone, Default, RuntimeDebug)]
 pub struct CarbonCreditAccountStruct {
     pub roles: RoleMask,
