@@ -20,7 +20,7 @@ frame_support::construct_runtime!(
 	{
 		System: frame_system::{Module, Call, Config, Storage, Event<T>},
         Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
-		EvercityAccounts: pallet_evercity_accounts::{Module, Call, Storage},
+		EvercityAccounts: pallet_evercity_accounts::{Module, Call, Storage, Event<T>},
 	}
 );
 
@@ -38,7 +38,7 @@ impl frame_system::Config for TestRuntime {
 	type AccountId = u64;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
-	type Event = ();
+	type Event = Event;
 	type BlockHashCount = ();
 	type Version = ();
 	type PalletInfo = PalletInfo;
@@ -51,6 +51,7 @@ impl frame_system::Config for TestRuntime {
 }
 
 impl pallet_evercity_accounts::Config for TestRuntime {
+    type Event = Event;
 }
 
 parameter_types! {
@@ -60,7 +61,7 @@ parameter_types! {
 
 impl pallet_balances::Config for TestRuntime {
     type Balance = u64;
-    type Event = ();
+    type Event = Event;
     type DustRemoval = ();
     type ExistentialDeposit = ExistentialDeposit;
     type AccountStore = System;
@@ -115,4 +116,38 @@ pub fn new_test_ext() -> frame_support::sp_io::TestExternalities {
     .unwrap();
 
     t.into()
+}
+
+
+pub fn new_test_ext_with_event() -> frame_support::sp_io::TestExternalities {
+    let mut t = frame_system::GenesisConfig::default()
+        .build_storage::<TestRuntime>()
+        .unwrap();
+    pallet_balances::GenesisConfig::<TestRuntime> {
+        // Provide some initial balances
+        balances: ROLES.iter().map(|x| (x.0, 100000)).collect(),
+    }
+    .assimilate_storage(&mut t)
+    .unwrap();
+
+    super::GenesisConfig::<TestRuntime> {
+        // Accounts for tests
+        genesis_account_registry: ROLES
+            .iter()
+            .map(|(acc, role)| {
+                (
+                    *acc,
+                    AccountStruct {
+                        roles: *role
+                    },
+                )
+            })
+            .collect(),
+    }
+    .assimilate_storage(&mut t)
+    .unwrap();
+
+    let mut ext = sp_io::TestExternalities::new(t);
+	ext.execute_with(|| System::set_block_number(1));
+	ext
 }

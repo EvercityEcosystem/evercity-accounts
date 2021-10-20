@@ -11,7 +11,7 @@ test:
 	SKIP_WASM_BUILD= cargo test
 
 check:
-	cargo check
+	cargo check --tests
 
 check-tests:
 	cargo check --tests

@@ -5,6 +5,7 @@ use frame_support::{
     decl_error, 
     decl_module, 
     decl_storage,
+    decl_event,
     dispatch::{
         DispatchResult,
         Vec,
@@ -26,7 +27,9 @@ pub mod mock;
 #[cfg(test)]    
 pub mod tests;
 
-pub trait Config: frame_system::Config {}
+pub trait Config: frame_system::Config {
+    type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
+}
 
 decl_storage! {
     trait Store for Module<T: Config> as CarbonCredits {
@@ -43,6 +46,22 @@ decl_storage! {
         LastID: u32;
     }
 }
+
+decl_event!(
+    pub enum Event<T>
+    where
+        AccountId = <T as frame_system::Config>::AccountId,
+    {
+        /// \[master, account, role\]
+        AccountAdd(AccountId, AccountId, RoleMask),
+
+        /// \[master, account, role\]
+        AccountSet(AccountId, AccountId, RoleMask),
+
+        /// \[master, account\]
+        MasterSet(AccountId, AccountId),
+    }
+);
 
 decl_error! {
     pub enum Error for Module<T: Config> {
@@ -65,6 +84,7 @@ decl_error! {
 decl_module! {
     pub struct Module<T: Config> for enum Call where origin: T::Origin {
         type Error = Error<T>;
+        fn deposit_event() = default;
         
         #[weight = 10_000]
         pub fn account_add_with_role_and_data(origin, who: T::AccountId, role: RoleMask) -> DispatchResult {
@@ -74,6 +94,7 @@ decl_module! {
             ensure!(is_roles_correct(role), Error::<T>::AccountRoleParamIncorrect);
             ensure!(!is_roles_mask_included(role, MASTER_ROLE_MASK), Error::<T>::AccountRoleMasterIncluded);
             Self::account_add(&who, AccountStruct::new(role));
+            Self::deposit_event(RawEvent::AccountAdd(caller, who, role));
             Ok(())
         }
 
@@ -86,6 +107,7 @@ decl_module! {
             ensure!(is_roles_correct(role), Error::<T>::AccountRoleParamIncorrect);
             ensure!(!is_roles_mask_included(role, MASTER_ROLE_MASK), Error::<T>::AccountRoleMasterIncluded);
             Self::account_set(&who, role);
+            Self::deposit_event(RawEvent::AccountSet(caller, who, role));
             Ok(())
         }
 
@@ -96,6 +118,7 @@ decl_module! {
             ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
             ensure!(!Self::account_is_master(&who), Error::<T>::InvalidAction);
             Self::account_set(&who, MASTER_ROLE_MASK);
+            Self::deposit_event(RawEvent::MasterSet(caller, who));
             Ok(())
         }
     }
