@@ -119,3 +119,22 @@ fn it_fails_account_set_with_master_role_already_master() {
         assert_ne!(set_master_result, DispatchResult::Ok(()));
     });
 }
+
+#[test]
+fn it_works_check_events() {
+    new_test_ext_with_event().execute_with(|| {
+        let some_new_account = 666;
+        let _ = EvercityAccounts::account_add_with_role_and_data(Origin::signed(ROLES[0].0), some_new_account, CC_INVESTOR_ROLE_MASK);
+        let add_account_event = last_event().unwrap();
+
+        let _ = EvercityAccounts::account_set_with_role_and_data(Origin::signed(ROLES[0].0), some_new_account, CC_AUDITOR_ROLE_MASK);
+        let set_account_event = last_event().unwrap();
+
+        let _ = EvercityAccounts::set_master(Origin::signed(ROLES[0].0), some_new_account);
+        let set_master_event = last_event().unwrap();
+
+        assert_eq!(Event::pallet_evercity_accounts(crate::RawEvent::AccountAdd(ROLES[0].0, some_new_account, CC_INVESTOR_ROLE_MASK)), add_account_event);
+        assert_eq!(Event::pallet_evercity_accounts(crate::RawEvent::AccountSet(ROLES[0].0, some_new_account, CC_AUDITOR_ROLE_MASK)), set_account_event);
+        assert_eq!(Event::pallet_evercity_accounts(crate::RawEvent::MasterSet(ROLES[0].0, some_new_account)), set_master_event);
+    });
+}

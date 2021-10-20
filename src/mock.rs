@@ -151,3 +151,11 @@ pub fn new_test_ext_with_event() -> frame_support::sp_io::TestExternalities {
 	ext.execute_with(|| System::set_block_number(1));
 	ext
 }
+
+// get and cut last event
+pub fn last_event() -> Result<Event, ()> {
+	match System::events().pop() {
+		Some(ev) => Ok(ev.event),
+		None => Err(())
+	}
+}
