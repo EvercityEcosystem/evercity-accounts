@@ -58,6 +58,9 @@ decl_event!(
         /// \[master, account, role\]
         AccountSet(AccountId, AccountId, RoleMask),
 
+        /// \[master, account, role\]
+        AccountWithdraw(AccountId, AccountId, RoleMask),
+
         /// \[master, account\]
         MasterSet(AccountId, AccountId),
     }
@@ -93,7 +96,7 @@ decl_module! {
             ensure!(!AccountRegistry::<T>::contains_key(&who), Error::<T>::AccountToAddAlreadyExists);
             ensure!(is_roles_correct(role), Error::<T>::AccountRoleParamIncorrect);
             ensure!(!is_roles_mask_included(role, MASTER_ROLE_MASK), Error::<T>::AccountRoleMasterIncluded);
-            Self::account_add(&who, AccountStruct::new(role));
+            AccountRegistry::<T>::insert(who.clone(), AccountStruct::new(role));
             Self::deposit_event(RawEvent::AccountAdd(caller, who, role));
             Ok(())
         }
@@ -106,7 +109,9 @@ decl_module! {
             ensure!(AccountRegistry::<T>::contains_key(&who), Error::<T>::AccountNotExist);
             ensure!(is_roles_correct(role), Error::<T>::AccountRoleParamIncorrect);
             ensure!(!is_roles_mask_included(role, MASTER_ROLE_MASK), Error::<T>::AccountRoleMasterIncluded);
-            Self::account_set(&who, role);
+            AccountRegistry::<T>::mutate(who.clone(),|acc|{
+                acc.roles |= role;
+            });
             Self::deposit_event(RawEvent::AccountSet(caller, who, role));
             Ok(())
         }
@@ -117,24 +122,31 @@ decl_module! {
             ensure!(caller != who, Error::<T>::InvalidAction);
             ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
             ensure!(!Self::account_is_master(&who), Error::<T>::InvalidAction);
-            Self::account_set(&who, MASTER_ROLE_MASK);
+            AccountRegistry::<T>::mutate(who.clone(),|acc|{
+                acc.roles |= MASTER_ROLE_MASK;
+            });
             Self::deposit_event(RawEvent::MasterSet(caller, who));
+            Ok(())
+        }
+
+        #[weight = 10_000]
+        pub fn account_withdraw_role(origin, who: T::AccountId, role: RoleMask) -> DispatchResult {
+            let caller = ensure_signed(origin)?;
+            ensure!(caller != who, Error::<T>::InvalidAction);
+            ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
+            ensure!(AccountRegistry::<T>::contains_key(&who), Error::<T>::AccountNotExist);
+            ensure!(is_roles_correct(role), Error::<T>::AccountRoleParamIncorrect);
+            ensure!(!is_roles_mask_included(role, MASTER_ROLE_MASK), Error::<T>::AccountRoleMasterIncluded);
+            AccountRegistry::<T>::mutate(who.clone(),|acc|{
+                acc.roles ^= role;
+            });
+            Self::deposit_event(RawEvent::AccountWithdraw(caller, who, role));
             Ok(())
         }
     }
 }
 
 impl<T: Config> Module<T> {
-    fn account_set(who: &T::AccountId, role: RoleMask) {
-        AccountRegistry::<T>::mutate(&who,|acc|{
-            acc.roles |= role;
-        });
-    }
-
-    fn account_add(account: &T::AccountId, data: AccountStruct) {
-        AccountRegistry::<T>::insert(account, &data);
-    }
-
     /// <pre>
     /// Method: account_is_master(acc: &T::AccountId) -> bool
     /// Arguments: acc: AccountId - checked account id
