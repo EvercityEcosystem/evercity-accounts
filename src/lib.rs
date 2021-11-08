@@ -212,4 +212,15 @@ impl<T: Config> Module<T> {
     pub fn account_is_cc_registry(acc: &T::AccountId) -> bool {
         AccountRegistry::<T>::get(acc).roles & CC_REGISTRY_ROLE_MASK != 0
     }
+
+    /// <pre>
+    /// Method: accoount_is_selected_role(acc: &T::AccountId, role: RoleMask) -> bool
+    /// Arguments: acc: AccountId - checked account id
+    ///
+    /// Checks if the acc has some custom role
+    /// </pre>
+    #[inline]
+    pub fn accoount_is_selected_role(acc: &T::AccountId, role: RoleMask) -> bool {
+        AccountRegistry::<T>::get(acc).roles & role != 0
+    }
 }
