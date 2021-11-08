@@ -220,7 +220,7 @@ impl<T: Config> Module<T> {
     /// Checks if the acc has some custom role
     /// </pre>
     #[inline]
-    pub fn accoount_is_selected_role(acc: &T::AccountId, role: RoleMask) -> bool {
+    pub fn account_is_selected_role(acc: &T::AccountId, role: RoleMask) -> bool {
         AccountRegistry::<T>::get(acc).roles & role != 0
     }
 }
