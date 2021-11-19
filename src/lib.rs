@@ -1,5 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use crate::sp_api_hidden_includes_decl_storage::hidden_include::traits::Get;
 use frame_support::{
     ensure,
     decl_error, 
@@ -89,7 +90,7 @@ decl_module! {
         type Error = Error<T>;
         fn deposit_event() = default;
         
-        #[weight = 10_000]
+        #[weight = 10_000 + T::DbWeight::get().reads_writes(2, 1)]
         pub fn account_add_with_role_and_data(origin, who: T::AccountId, role: RoleMask) -> DispatchResult {
             let caller = ensure_signed(origin)?;
             ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
@@ -101,7 +102,7 @@ decl_module! {
             Ok(())
         }
 
-        #[weight = 10_000]
+        #[weight = 10_000 + T::DbWeight::get().reads_writes(2, 1)]
         pub fn account_set_with_role_and_data(origin, who: T::AccountId, role: RoleMask) -> DispatchResult {
             let caller = ensure_signed(origin)?;
             ensure!(caller != who, Error::<T>::InvalidAction);
@@ -116,7 +117,7 @@ decl_module! {
             Ok(())
         }
 
-        #[weight = 10_000]
+        #[weight = 10_000 + T::DbWeight::get().reads_writes(2, 1)]
         pub fn set_master(origin, who: T::AccountId) -> DispatchResult {
             let caller = ensure_signed(origin)?;
             ensure!(caller != who, Error::<T>::InvalidAction);
@@ -129,7 +130,7 @@ decl_module! {
             Ok(())
         }
 
-        #[weight = 10_000]
+        #[weight = 10_000 + T::DbWeight::get().reads_writes(2, 1)]
         pub fn account_withdraw_role(origin, who: T::AccountId, role: RoleMask) -> DispatchResult {
             let caller = ensure_signed(origin)?;
             ensure!(caller != who, Error::<T>::InvalidAction);
