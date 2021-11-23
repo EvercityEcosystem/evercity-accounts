@@ -152,9 +152,9 @@ fn it_works_check_events() {
         let _ = EvercityAccounts::account_withdraw_role(Origin::signed(ROLES[0].0), some_new_account, CC_AUDITOR_ROLE_MASK);
         let withdraw_account_event = last_event().unwrap();
 
-        assert_eq!(Event::pallet_evercity_accounts(crate::RawEvent::AccountAdd(ROLES[0].0, some_new_account, CC_INVESTOR_ROLE_MASK)), add_account_event);
-        assert_eq!(Event::pallet_evercity_accounts(crate::RawEvent::AccountSet(ROLES[0].0, some_new_account, CC_AUDITOR_ROLE_MASK)), set_account_event);
-        assert_eq!(Event::pallet_evercity_accounts(crate::RawEvent::MasterSet(ROLES[0].0, some_new_account)), set_master_event);
-        assert_eq!(Event::pallet_evercity_accounts(crate::RawEvent::AccountWithdraw(ROLES[0].0, some_new_account, CC_AUDITOR_ROLE_MASK)), withdraw_account_event);
+        assert_eq!(Event::pallet_evercity_accounts(crate::Event::AccountAdd(ROLES[0].0, some_new_account, CC_INVESTOR_ROLE_MASK)), add_account_event);
+        assert_eq!(Event::pallet_evercity_accounts(crate::Event::AccountSet(ROLES[0].0, some_new_account, CC_AUDITOR_ROLE_MASK)), set_account_event);
+        assert_eq!(Event::pallet_evercity_accounts(crate::Event::MasterSet(ROLES[0].0, some_new_account)), set_master_event);
+        assert_eq!(Event::pallet_evercity_accounts(crate::Event::AccountWithdraw(ROLES[0].0, some_new_account, CC_AUDITOR_ROLE_MASK)), withdraw_account_event);
     });
 }

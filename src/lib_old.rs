@@ -1,153 +1,74 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-// #[cfg(feature = "runtime-benchmarks")]
-// mod benchmarking;
+use crate::sp_api_hidden_includes_decl_storage::hidden_include::traits::Get;
+use frame_support::{
+    ensure,
+    decl_error, 
+    decl_module, 
+    decl_storage,
+    decl_event,
+    dispatch::{
+        DispatchResult,
+        Vec,
+    },
+};
+use frame_system::{
+    ensure_signed,
+};
+use frame_support::sp_std::{
+    cmp::{
+        Eq, 
+        PartialEq}, 
+};
+use accounts::*;
 
+pub mod accounts;
 #[cfg(test)]
 pub mod mock;
 #[cfg(test)]    
-pub mod tests;  
-pub mod accounts;
+pub mod tests;
 
-use sp_std::{fmt::Debug, prelude::*};
-use codec::{Encode, Decode, HasCompact};
-use frame_support::{
-	ensure,
-	traits::{Currency, ReservableCurrency, BalanceStatus::Reserved},
-	dispatch::DispatchError,
-};
-// pub use weights::WeightInfo;
+pub trait Config: frame_system::Config {
+    type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
+}
 
-pub use pallet::*;
-use accounts::*;
+decl_storage! {
+    trait Store for Module<T: Config> as CarbonCredits {
+        Fuse get(fn fuse)
+            build(|config| !config.genesis_account_registry.is_empty()):
+            bool;
 
+        /// Storage map for accounts, their roles and corresponding info
+        AccountRegistry
+            get(fn account_registry)
+            config(genesis_account_registry):
+            map hasher(blake2_128_concat) T::AccountId => AccountStruct;
 
-#[frame_support::pallet]
-pub mod pallet {
-	use frame_support::{
-		dispatch::{DispatchResultWithPostInfo, DispatchResult},
-		pallet_prelude::*,
-	};
-	use frame_system::pallet_prelude::*;
-	use super::*;
-	use accounts::*;
+        LastID: u32;
+    }
+}
 
-    #[pallet::pallet]
-	#[pallet::generate_store(pub(super) trait Store)]
-	pub struct Pallet<T>(_);
-
-    #[pallet::config]
-	/// The module configuration trait.
-	pub trait Config: frame_system::Config {
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-	}
-
-	#[pallet::hooks]
-	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
-
-	#[pallet::storage]
-	/// Details of an account.
-	pub type AccountRegistry<T: Config> = StorageMap<
-		_,
-		Blake2_128Concat,
-		T::AccountId,
-		AccountStruct,
-		ValueQuery
-	>;
-
-	#[pallet::storage]
-	/// Details of an account.
-	pub type LastID<T: Config> = StorageValue<
-		 _,
-		u32,
-		ValueQuery
-	>;
-
-	#[pallet::call]
-	impl<T: Config> Pallet<T> {
-		#[pallet::weight(10_000)]
-		pub fn create(
-			origin: OriginFor<T>
-		) -> DispatchResultWithPostInfo {
-			let _who = ensure_signed(origin)?;
-			Ok(().into())
-		}
-
-		#[pallet::weight(10_000)]
-		pub fn account_add_with_role_and_data(origin: OriginFor<T>, who: T::AccountId, role: RoleMask) -> DispatchResultWithPostInfo {
-            let caller = ensure_signed(origin)?;
-            ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
-            ensure!(!AccountRegistry::<T>::contains_key(&who), Error::<T>::AccountToAddAlreadyExists);
-            ensure!(is_roles_correct(role), Error::<T>::AccountRoleParamIncorrect);
-            ensure!(!is_roles_mask_included(role, MASTER_ROLE_MASK), Error::<T>::AccountRoleMasterIncluded);
-            AccountRegistry::<T>::insert(who.clone(), AccountStruct::new(role));
-            Self::deposit_event(Event::AccountAdd(caller, who, role));
-            Ok(().into())
-        }
-
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(2, 1))]
-        pub fn account_set_with_role_and_data(origin: OriginFor<T>, who: T::AccountId, role: RoleMask) -> DispatchResultWithPostInfo {
-            let caller = ensure_signed(origin)?;
-            ensure!(caller != who, Error::<T>::InvalidAction);
-            ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
-            ensure!(AccountRegistry::<T>::contains_key(&who), Error::<T>::AccountNotExist);
-            ensure!(is_roles_correct(role), Error::<T>::AccountRoleParamIncorrect);
-            ensure!(!is_roles_mask_included(role, MASTER_ROLE_MASK), Error::<T>::AccountRoleMasterIncluded);
-            AccountRegistry::<T>::mutate(who.clone(),|acc|{
-                acc.roles |= role;
-            });
-            Self::deposit_event(Event::AccountSet(caller, who, role));
-            Ok(().into())
-        }
-
-        #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(2, 1))]
-        pub fn set_master(origin: OriginFor<T>, who: T::AccountId) -> DispatchResultWithPostInfo {
-            let caller = ensure_signed(origin)?;
-            ensure!(caller != who, Error::<T>::InvalidAction);
-            ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
-            ensure!(!Self::account_is_master(&who), Error::<T>::InvalidAction);
-            AccountRegistry::<T>::mutate(who.clone(),|acc|{
-                acc.roles |= MASTER_ROLE_MASK;
-            });
-            Self::deposit_event(Event::MasterSet(caller, who));
-            Ok(().into())
-        }
-
-        #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(2, 1))]
-        pub fn account_withdraw_role(origin: OriginFor<T>, who: T::AccountId, role: RoleMask) -> DispatchResultWithPostInfo {
-            let caller = ensure_signed(origin)?;
-            ensure!(caller != who, Error::<T>::InvalidAction);
-            ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
-            ensure!(AccountRegistry::<T>::contains_key(&who), Error::<T>::AccountNotExist);
-            ensure!(is_roles_correct(role), Error::<T>::AccountRoleParamIncorrect);
-            ensure!(!is_roles_mask_included(role, MASTER_ROLE_MASK), Error::<T>::AccountRoleMasterIncluded);
-            AccountRegistry::<T>::mutate(who.clone(),|acc|{
-                acc.roles ^= role;
-            });
-            Self::deposit_event(Event::AccountWithdraw(caller, who, role));
-            Ok(().into())
-        }
-	}
-
-    #[pallet::event]
-	#[pallet::generate_deposit(pub(super) fn deposit_event)]
-	#[pallet::metadata(T::AccountId = "AccountId", T::Balance = "Balance", T::AssetId = "AssetId")]
-	pub enum Event<T: Config> {
+decl_event!(
+    pub enum Event<T>
+    where
+        AccountId = <T as frame_system::Config>::AccountId,
+    {
         /// \[master, account, role\]
-        AccountAdd(T::AccountId, T::AccountId, RoleMask),
+        AccountAdd(AccountId, AccountId, RoleMask),
 
         /// \[master, account, role\]
-        AccountSet(T::AccountId, T::AccountId, RoleMask),
+        AccountSet(AccountId, AccountId, RoleMask),
 
         /// \[master, account, role\]
-        AccountWithdraw(T::AccountId, T::AccountId, RoleMask),
+        AccountWithdraw(AccountId, AccountId, RoleMask),
 
         /// \[master, account\]
-        MasterSet(T::AccountId, T::AccountId),
-	}
+        MasterSet(AccountId, AccountId),
+    }
+);
 
-	#[pallet::error]
-	pub enum Error<T> {
+decl_error! {
+    pub enum Error for Module<T: Config> {
         // Account errors:
         AccountNotMaster,
         AccountNotAuditor,
@@ -161,11 +82,73 @@ pub mod pallet {
         AccountRoleMasterIncluded,
 
         InvalidAction,
-	}	
+    }
 }
 
-impl<T: Config> Pallet<T> {
-		    /// <pre>
+decl_module! {
+    pub struct Module<T: Config> for enum Call where origin: T::Origin {
+        type Error = Error<T>;
+        fn deposit_event() = default;
+        
+        #[weight = 10_000 + T::DbWeight::get().reads_writes(2, 1)]
+        pub fn account_add_with_role_and_data(origin, who: T::AccountId, role: RoleMask) -> DispatchResult {
+            let caller = ensure_signed(origin)?;
+            ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
+            ensure!(!AccountRegistry::<T>::contains_key(&who), Error::<T>::AccountToAddAlreadyExists);
+            ensure!(is_roles_correct(role), Error::<T>::AccountRoleParamIncorrect);
+            ensure!(!is_roles_mask_included(role, MASTER_ROLE_MASK), Error::<T>::AccountRoleMasterIncluded);
+            AccountRegistry::<T>::insert(who.clone(), AccountStruct::new(role));
+            Self::deposit_event(RawEvent::AccountAdd(caller, who, role));
+            Ok(())
+        }
+
+        #[weight = 10_000 + T::DbWeight::get().reads_writes(2, 1)]
+        pub fn account_set_with_role_and_data(origin, who: T::AccountId, role: RoleMask) -> DispatchResult {
+            let caller = ensure_signed(origin)?;
+            ensure!(caller != who, Error::<T>::InvalidAction);
+            ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
+            ensure!(AccountRegistry::<T>::contains_key(&who), Error::<T>::AccountNotExist);
+            ensure!(is_roles_correct(role), Error::<T>::AccountRoleParamIncorrect);
+            ensure!(!is_roles_mask_included(role, MASTER_ROLE_MASK), Error::<T>::AccountRoleMasterIncluded);
+            AccountRegistry::<T>::mutate(who.clone(),|acc|{
+                acc.roles |= role;
+            });
+            Self::deposit_event(RawEvent::AccountSet(caller, who, role));
+            Ok(())
+        }
+
+        #[weight = 10_000 + T::DbWeight::get().reads_writes(2, 1)]
+        pub fn set_master(origin, who: T::AccountId) -> DispatchResult {
+            let caller = ensure_signed(origin)?;
+            ensure!(caller != who, Error::<T>::InvalidAction);
+            ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
+            ensure!(!Self::account_is_master(&who), Error::<T>::InvalidAction);
+            AccountRegistry::<T>::mutate(who.clone(),|acc|{
+                acc.roles |= MASTER_ROLE_MASK;
+            });
+            Self::deposit_event(RawEvent::MasterSet(caller, who));
+            Ok(())
+        }
+
+        #[weight = 10_000 + T::DbWeight::get().reads_writes(2, 1)]
+        pub fn account_withdraw_role(origin, who: T::AccountId, role: RoleMask) -> DispatchResult {
+            let caller = ensure_signed(origin)?;
+            ensure!(caller != who, Error::<T>::InvalidAction);
+            ensure!(Self::account_is_master(&caller), Error::<T>::AccountNotMaster);
+            ensure!(AccountRegistry::<T>::contains_key(&who), Error::<T>::AccountNotExist);
+            ensure!(is_roles_correct(role), Error::<T>::AccountRoleParamIncorrect);
+            ensure!(!is_roles_mask_included(role, MASTER_ROLE_MASK), Error::<T>::AccountRoleMasterIncluded);
+            AccountRegistry::<T>::mutate(who.clone(),|acc|{
+                acc.roles ^= role;
+            });
+            Self::deposit_event(RawEvent::AccountWithdraw(caller, who, role));
+            Ok(())
+        }
+    }
+}
+
+impl<T: Config> Module<T> {
+    /// <pre>
     /// Method: account_is_master(acc: &T::AccountId) -> bool
     /// Arguments: acc: AccountId - checked account id
     ///
