@@ -1,6 +1,7 @@
 use crate::mock::*;
-use frame_support::{assert_ok, dispatch::{
+use frame_support::{assert_ok, assert_noop, dispatch::{
     DispatchResult, 
+    PostDispatchInfo
 }};
 use crate::accounts::*;
 
@@ -9,16 +10,17 @@ fn it_works_account_add_with_role_and_data() {
     new_test_ext().execute_with(|| {
         let some_new_account = 666;
         let assign_role_result = EvercityAccounts::account_add_with_role_and_data(Origin::signed(ROLES[0].0), some_new_account, CC_INVESTOR_ROLE_MASK);
-        assert_ok!(assign_role_result, ());
+        assert_ok!(assign_role_result);
     });
 }
 
 #[test]
-fn it_fils_account_add_with_role_and_data_not_master() {
+fn it_fails_account_add_with_role_and_data_not_master() {
     new_test_ext().execute_with(|| {
         let some_new_account = 666;
         let assign_role_result = EvercityAccounts::account_add_with_role_and_data(Origin::signed(ROLES[1].0), some_new_account, CC_INVESTOR_ROLE_MASK);
-        assert_ne!(assign_role_result, DispatchResult::Ok(()));
+        // assert_ne!(assign_role_result, PostDispatchInfo);
+        assert_noop!(assign_role_result, crate::Error::<TestRuntime>::AccountNotMaster);
     });
 }
 
@@ -27,7 +29,8 @@ fn it_fails_account_set_with_role_and_data_not_exits() {
     new_test_ext().execute_with(|| {
         let some_new_account = 666;
         let assign_role_result = EvercityAccounts::account_set_with_role_and_data(Origin::signed(ROLES[0].0), some_new_account, CC_INVESTOR_ROLE_MASK);
-        assert_ne!(assign_role_result, DispatchResult::Ok(()));
+        // assert_ne!(assign_role_result, DispatchResult::Ok(()));
+        assert_noop!(assign_role_result, crate::Error::<TestRuntime>::AccountNotExist);
     });
 }
 
@@ -38,7 +41,7 @@ fn it_works_account_set_with_role_and_data() {
         let _ = EvercityAccounts::account_add_with_role_and_data(Origin::signed(ROLES[0].0), some_new_account, CC_INVESTOR_ROLE_MASK);
         let assign_role_result = EvercityAccounts::account_set_with_role_and_data(Origin::signed(ROLES[0].0), some_new_account, CC_AUDITOR_ROLE_MASK);
         assert!(EvercityAccounts::account_is_cc_investor(&some_new_account));
-        assert_ok!(assign_role_result, ());
+        assert_ok!(assign_role_result);
     });
 }
 
@@ -48,7 +51,8 @@ fn it_fails_account_set_with_role_and_data_not_master() {
         let some_new_account = 666;
         let _ = EvercityAccounts::account_add_with_role_and_data(Origin::signed(ROLES[0].0), some_new_account, CC_INVESTOR_ROLE_MASK);
         let assign_role_result = EvercityAccounts::account_set_with_role_and_data(Origin::signed(ROLES[1].0), some_new_account, CC_AUDITOR_ROLE_MASK);
-        assert_ne!(assign_role_result, DispatchResult::Ok(()));
+        // assert_ne!(assign_role_result, DispatchResult::Ok(()));
+        assert_noop!(assign_role_result, crate::Error::<TestRuntime>::AccountNotMaster);
     });
 }
 
@@ -58,7 +62,8 @@ fn it_fails_account_set_with_master_role() {
         let some_new_account = 666;
         let _ = EvercityAccounts::account_add_with_role_and_data(Origin::signed(ROLES[0].0), some_new_account, CC_INVESTOR_ROLE_MASK);
         let assign_role_result = EvercityAccounts::account_set_with_role_and_data(Origin::signed(ROLES[0].0), some_new_account, MASTER_ROLE_MASK);
-        assert_ne!(assign_role_result, DispatchResult::Ok(()));
+        // assert_ne!(assign_role_result, DispatchResult::Ok(()));
+        assert_noop!(assign_role_result, crate::Error::<TestRuntime>::AccountRoleMasterIncluded);
     });
 }
 
@@ -84,7 +89,7 @@ fn it_works_roles_assigned_correctly_set_master() {
 
         all_roles.iter().for_each(|x| {
             let assign_role_result = EvercityAccounts::account_set_with_role_and_data(Origin::signed(ROLES[0].0), some_new_account, *x);
-            assert_ok!(assign_role_result,());
+            assert_ok!(assign_role_result);
         });
 
         assert!(EvercityAccounts::account_is_cc_project_owner(&some_new_account));
@@ -103,8 +108,8 @@ fn it_works_account_set_with_master_role() {
         let set_master_result = EvercityAccounts::set_master(Origin::signed(ROLES[0].0), some_new_master_account);
         let assign_role_result = EvercityAccounts::account_add_with_role_and_data(Origin::signed(some_new_master_account), some_new_account, CC_PROJECT_OWNER_ROLE_MASK);
 
-        assert_ok!(set_master_result, ());
-        assert_ok!(assign_role_result, ());
+        assert_ok!(set_master_result);
+        assert_ok!(assign_role_result);
         assert!(EvercityAccounts::account_is_master(&some_new_master_account));
         assert!(EvercityAccounts::account_is_cc_project_owner(&some_new_account));
     });
@@ -114,10 +119,11 @@ fn it_works_account_set_with_master_role() {
 fn it_fails_account_set_with_master_role_already_master() {
     new_test_ext().execute_with(|| {
         let some_new_master_account = 666;
-        let _ = EvercityAccounts::set_master(Origin::signed(ROLES[0].0), some_new_master_account);
+        let asd = EvercityAccounts::set_master(Origin::signed(ROLES[0].0), some_new_master_account);
         let set_master_result = EvercityAccounts::set_master(Origin::signed(ROLES[0].0), some_new_master_account);
 
-        assert_ne!(set_master_result, DispatchResult::Ok(()));
+        // assert_ne!(set_master_result, DispatchResult::Ok(()));
+        assert_noop!(set_master_result, crate::Error::<TestRuntime>::InvalidAction);
     });
 }
 
@@ -130,8 +136,8 @@ fn it_works_account_withraw_role() {
 
         let withdraw_role_result = EvercityAccounts::account_withdraw_role(Origin::signed(ROLES[0].0), some_new_account, CC_INVESTOR_ROLE_MASK);
 
-        assert_ok!(assign_role_result, ());
-        assert_ok!(withdraw_role_result, ());
+        assert_ok!(assign_role_result);
+        assert_ok!(withdraw_role_result);
         assert!(!EvercityAccounts::account_is_cc_investor(&some_new_account));
     });
 }

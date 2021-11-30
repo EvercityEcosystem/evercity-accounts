@@ -7,6 +7,7 @@
 pub mod mock;
 #[cfg(test)]    
 pub mod tests;  
+
 pub mod accounts;
 
 use sp_std::{fmt::Debug, prelude::*};
@@ -30,7 +31,7 @@ pub mod pallet {
 	};
 	use frame_system::pallet_prelude::*;
 	use super::*;
-	use accounts::*;
+	// use accounts::*;
 
     #[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
@@ -44,6 +45,66 @@ pub mod pallet {
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
+
+	#[pallet::genesis_config]
+    pub struct GenesisConfig<T: Config> {
+        // pub core_asset_admin: AccountIdOf<T>,
+        // pub core_asset_id: super::serializable::AssetId<T>,
+        // pub balances: Vec<(AccountIdOf<T>, super::serializable::AssetBalance<T>)>,
+		pub genesis_account_registry: Vec<(T::AccountId, AccountStruct)>
+    }
+
+	#[cfg(feature = "std")]
+    impl<T: Config> Default for GenesisConfig<T> {
+        fn default() -> Self {
+            GenesisConfig {
+                genesis_account_registry: Default::default(),
+            }
+        }
+    }
+
+	#[pallet::genesis_build]
+    impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
+        fn build(&self) {
+            // let mut storage = Default::default();
+            // let _ = self.assimilate_storage(&mut storage);
+            // CoreAssetId::<T>::put(self.core_asset_id.0);
+
+            // let admin_source = T::Lookup::unlookup(self.core_asset_admin.clone());
+            // let call = pallet_assets::Call::<T>::create(
+            //     self.core_asset_id.0,
+            //     admin_source,
+            //     u32::MAX,
+            //     One::one(),
+            // );
+            // let result = call
+            //     .dispatch_bypass_filter(RawOrigin::Signed(self.core_asset_admin.clone()).into());
+            // assert!(result.is_ok());
+
+            // // ensure no duplicates exist.
+            // let endowed_accounts = self
+            //     .balances
+            //     .iter()
+            //     .map(|(x, _)| x)
+            //     .cloned()
+            //     .collect::<std::collections::BTreeSet<_>>();
+
+            // assert!(
+            //     endowed_accounts.len() == self.balances.len(),
+            //     "duplicate balances in genesis."
+            // );
+
+            // for (ref who, amount) in &self.balances {
+            //     let who_source = <T::Lookup as StaticLookup>::unlookup(who.clone());
+            //     let call =
+            //         pallet_assets::Call::<T>::mint(self.core_asset_id.0, who_source, amount.0);
+            //     let result = call.dispatch_bypass_filter(
+            //         RawOrigin::Signed(self.core_asset_admin.clone()).into(),
+            //     );
+            //     assert!(result.is_ok());
+            // }
+        }
+    }
 
 	#[pallet::storage]
 	/// Details of an account.
@@ -240,5 +301,23 @@ impl<T: Config> Pallet<T> {
     #[inline]
     pub fn account_is_selected_role(acc: &T::AccountId, role: RoleMask) -> bool {
         AccountRegistry::<T>::get(acc).roles & role != 0
+    }
+}
+
+#[cfg(test)]
+#[cfg(feature = "std")]
+impl<T: Config> GenesisConfig<T> {
+    /// Direct implementation of `GenesisBuild::build_storage`.
+    ///
+    /// Kept in order not to break dependency.
+    pub fn build_storage(&self) -> Result<sp_runtime::Storage, String> {
+        <Self as frame_support::traits::GenesisBuild<T>>::build_storage(self)
+    }
+
+    /// Direct implementation of `GenesisBuild::assimilate_storage`.
+    ///
+    /// Kept in order not to break dependency.
+    pub fn assimilate_storage(&self, storage: &mut sp_runtime::Storage) -> Result<(), String> {
+        <Self as frame_support::traits::GenesisBuild<T>>::assimilate_storage(self, storage)
     }
 }
