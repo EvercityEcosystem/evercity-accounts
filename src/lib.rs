@@ -1,4 +1,12 @@
+#![allow(clippy::unused_unit)]
 #![cfg_attr(not(feature = "std"), no_std)]
+
+pub mod accounts;
+#[cfg(test)]
+pub mod mock;
+#[cfg(test)]    
+pub mod tests;
+
 
 use crate::sp_api_hidden_includes_decl_storage::hidden_include::traits::Get;
 use frame_support::{
@@ -21,12 +29,6 @@ use frame_support::sp_std::{
         PartialEq}, 
 };
 use accounts::*;
-
-pub mod accounts;
-#[cfg(test)]
-pub mod mock;
-#[cfg(test)]    
-pub mod tests;
 
 pub trait Config: frame_system::Config {
     type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
