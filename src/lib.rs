@@ -7,7 +7,6 @@ pub mod mock;
 #[cfg(test)]    
 pub mod tests;
 
-
 use crate::sp_api_hidden_includes_decl_storage::hidden_include::traits::Get;
 use frame_support::{
     ensure,
@@ -36,10 +35,6 @@ pub trait Config: frame_system::Config {
 
 decl_storage! {
     trait Store for Module<T: Config> as CarbonCredits {
-        Fuse get(fn fuse)
-            build(|config| !config.genesis_account_registry.is_empty()):
-            bool;
-
         /// Storage map for accounts, their roles and corresponding info
         AccountRegistry
             get(fn account_registry)
