@@ -29,10 +29,10 @@ Each evercity account can can accommodate one or more roles:
 - EMISSION_CREATOR: TBA
 
 - CC_PROJECT_OWNER: the role which can create carbon projects, annual report and issue caebon credits
-- CC_AUDITOR: the role to sign project documentation and annual reports accordint to carbon credits standard
-- CC_STANDARD: the role to sign project documentation and annual reports accordint to carbon credits standard
+- CC_AUDITOR: the role to sign project documentation and annual reports according to carbon credits standard
+- CC_STANDARD: the role to sign project documentation and annual reports according to carbon credits standard
 - CC_INVESTOR: carbon credits investor
-- CC_REGISTRY: the role to sign project documentation and annual reports accordint to carbon credits standard
+- CC_REGISTRY: the role to sign project documentation and annual reports according to carbon credits standard
 
 
 # 5. Evercity Account pallet can do several things
