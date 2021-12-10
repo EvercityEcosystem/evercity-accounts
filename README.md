@@ -1,6 +1,6 @@
 # 1. Evercity Accounts Pallet
 
-This repositary contains source code of blockchain node, which is a main part of Evercity's Accounts.
+This repositary contains source code of blockchain node, which is a main part of Evercity's Accounts. The pallet has a purely technical purpose and is used for interaction with other pallets.
 
 # 2. Evercity carbon credits project main entities
 
